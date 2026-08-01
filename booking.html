@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Book a Court — Chaitanya Badminton Academy</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="navbar">
+  <div class="container">
+    <a href="index.html" class="brand"><span class="shuttle-dot"></span> CHAITANYA BADMINTON</a>
+    <nav>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="index.html#courts">Courts</a></li>
+        <li><a href="index.html#pricing">Pricing</a></li>
+        <li><a href="index.html#contact">Contact</a></li>
+        <li><a href="booking.html" class="btn btn-primary btn-sm active">Book Court</a></li>
+      </ul>
+    </nav>
+    <button class="nav-toggle" aria-label="Toggle menu"><i class="fa-solid fa-bars"></i></button>
+  </div>
+</header>
+
+<section class="page-hero">
+  <div class="container">
+    <div class="eyebrow">Book a Court</div>
+    <h1>Reserve your slot</h1>
+    <p style="color:rgba(255,255,255,0.7);max-width:520px;margin-top:14px">Pick a court below or fill the form directly — we'll check availability instantly and confirm on WhatsApp.</p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">Step 1</div>
+      <h2>Choose a court</h2>
+    </div>
+    <div class="court-grid" id="courts-grid-full"></div>
+  </div>
+</section>
+
+<section style="background:#fff" id="booking-form-section">
+  <div class="container" style="max-width:720px">
+    <div class="section-head center">
+      <div class="eyebrow">Step 2</div>
+      <h2>Booking details</h2>
+    </div>
+
+    <form class="contact-form glass-card" id="booking-form">
+      <div class="field-row">
+        <div class="field"><label>Name *</label><input type="text" name="name" required placeholder="Your full name"></div>
+        <div class="field"><label>Mobile Number *</label><input type="tel" name="mobile" required placeholder="10-digit mobile number" pattern="[0-9]{10}"></div>
+      </div>
+      <div class="field"><label>Email (Optional)</label><input type="email" name="email" placeholder="you@example.com"></div>
+
+      <div class="field-row">
+        <div class="field"><label>Court *</label><select name="court" id="bk-court" required></select></div>
+        <div class="field"><label>Date *</label><input type="date" name="date" required></div>
+      </div>
+
+      <div class="field-row">
+        <div class="field"><label>Time Slot *</label><select name="slot" id="bk-slot" required></select></div>
+        <div class="field"><label>Number of Players *</label>
+          <select name="players" required>
+            <option value="">Select</option>
+            <option>2 (Singles)</option>
+            <option>4 (Doubles)</option>
+            <option>Coaching Session</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Purpose *</label>
+        <select name="purpose" required>
+          <option value="">Select purpose</option>
+          <option>Casual Play</option>
+          <option>Practice / Training</option>
+          <option>Coaching Session</option>
+          <option>Tournament Prep</option>
+          <option>Corporate / Group Event</option>
+        </select>
+      </div>
+
+      <div class="field"><label>Notes</label><textarea name="notes" rows="3" placeholder="Anything we should know?"></textarea></div>
+
+      <button class="btn btn-primary" style="width:100%" type="submit">
+        <i class="fa-solid fa-calendar-check"></i> Submit Booking Request
+      </button>
+
+      <div class="form-msg" id="booking-msg"></div>
+      <div id="wa-cta"></div>
+    </form>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="footer-bottom">© <span id="year"></span> Chaitanya Badminton Academy. All rights reserved.</div>
+  </div>
+</footer>
+
+<a href="#" class="wa-float" target="_blank" aria-label="Chat on WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+
+<script src="config.js"></script>
+<script src="script.js"></script>
+<script>
+  document.getElementById("year").textContent = new Date().getFullYear();
+  // If arriving from a "Book Now" card link with #court-id, scroll straight to the form
+  if (window.location.hash) {
+    const courtId = window.location.hash.replace("#", "");
+    const court = CONFIG.courts.find(c => c.id === courtId);
+    window.addEventListener("load", () => {
+      if (court) document.getElementById("bk-court").value = court.name;
+      document.getElementById("booking-form-section").scrollIntoView({ behavior: "smooth" });
+    });
+  }
+</script>
+</body>
+</html>
