@@ -124,13 +124,33 @@ function populateFormOptions() {
 
 function openBookingModal(courtId) {
   const overlay = $("#booking-modal");
-  if (!overlay) { window.location.href = "booking.html" + (courtId ? `#${courtId}` : ""); return; }
-  overlay.classList.add("open");
-  document.body.style.overflow = "hidden";
-  if (courtId) {
-    const court = CONFIG.courts.find(c => c.id === courtId);
-    if (court && $("#bk-court")) $("#bk-court").value = court.name;
+
+  if (overlay) {
+    // Home page (index.html) uses a real modal.
+    overlay.classList.add("open");
+    document.body.style.overflow = "hidden";
+    if (courtId) {
+      const court = CONFIG.courts.find(c => c.id === courtId);
+      if (court && $("#bk-court")) $("#bk-court").value = court.name;
+    }
+    return;
   }
+
+  const courtSelect = $("#bk-court");
+  const formSection = $("#booking-form-section");
+  if (courtSelect && formSection) {
+    // Already on booking.html — select the court and scroll to the form directly,
+    // instead of changing the URL hash (which doesn't trigger a page reload here).
+    if (courtId) {
+      const court = CONFIG.courts.find(c => c.id === courtId);
+      if (court) courtSelect.value = court.name;
+    }
+    formSection.scrollIntoView({ behavior: "smooth" });
+    return;
+  }
+
+  // Any other page without a form or modal — navigate to the booking page.
+  window.location.href = "booking.html" + (courtId ? `#${courtId}` : "");
 }
 
 function closeBookingModal() {
@@ -409,7 +429,7 @@ function renderTable() {
         <div class="row-actions">
           <button class="confirm" onclick="updateBookingStatus('${b.bookingId}','Confirmed')" ${b.status === "Confirmed" ? "disabled" : ""}>Confirm</button>
           <button class="reject" onclick="updateBookingStatus('${b.bookingId}','Cancelled')" ${b.status === "Cancelled" ? "disabled" : ""}>Reject</button>
-          <button class="wa" onclick="sendAdminWhatsApp('${b.bookingId}')"><i class="fa-brands fa-whatsapp"></i></button>
+          <a class="wa" href="${buildAdminWhatsAppLink(b)}" target="_blank" rel="noopener" title="Send WhatsApp message"><i class="fa-brands fa-whatsapp"></i></a>
           <button onclick="deleteBooking('${b.bookingId}')">Delete</button>
         </div>
       </td>
@@ -442,24 +462,34 @@ async function deleteBooking(bookingId) {
   }
 }
 
-function sendAdminWhatsApp(bookingId) {
-  const b = AdminState.bookings.find(x => x.bookingId === bookingId);
-  if (!b) return;
+/** Builds a wa.me link with a message worded for the booking's current status — used directly as an <a href>, not via window.open(), so popup blockers can't interfere. */
+function buildAdminWhatsAppLink(b) {
+  let statusLine;
+  if (b.status === "Confirmed") {
+    statusLine = "Your booking has been confirmed! ✅";
+  } else if (b.status === "Cancelled") {
+    statusLine = "Unfortunately, we're unable to confirm this booking request. ❌";
+  } else {
+    statusLine = "We've received your booking request and it's pending confirmation.";
+  }
+
+  const arriveLine = b.status === "Confirmed" ? "\n\nPlease arrive 10 minutes before your scheduled slot." : "";
+
   const msg =
 `Hello ${b.name},
 
-Your booking has been ${b.status.toLowerCase()}.
+${statusLine}
 
 🏸 ${CONFIG.academyName}
 
 Court: ${b.court}
 Date: ${formatDateLong(b.date)}
-Time: ${b.slot}
-
-Please arrive 10 minutes before your scheduled slot.
+Time: ${b.slot}${arriveLine}
 
 Thank you!`;
-  window.open(`https://wa.me/91${b.mobile.replace(/\D/g, "").slice(-10)}?text=${encodeURIComponent(msg)}`, "_blank");
+
+  const digits = (b.mobile || "").replace(/\D/g, "").slice(-10);
+  return `https://wa.me/91${digits}?text=${encodeURIComponent(msg)}`;
 }
 
 function applyFilters() {
