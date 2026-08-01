@@ -398,11 +398,11 @@ table.data-table tr:hover td { background: rgba(27,79,168,0.03); }
 .badge.confirmed { background: rgba(31,157,85,0.14); color: var(--status-confirmed); }
 .badge.cancelled { background: rgba(214,69,69,0.14); color: var(--status-cancelled); }
 .row-actions { display: flex; gap: 6px; flex-wrap: wrap; }
-.row-actions button { border: none; background: var(--mist); padding: 6px 10px; border-radius: 6px; font-size: 0.78rem; cursor: pointer; font-weight: 600; }
+.row-actions button, .row-actions a { border: none; background: var(--mist); padding: 6px 10px; border-radius: 6px; font-size: 0.78rem; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; text-decoration: none; }
 .row-actions button.confirm { color: var(--status-confirmed); }
 .row-actions button.reject { color: var(--status-cancelled); }
-.row-actions button.wa { color: #25D366; }
-.row-actions button:hover { background: var(--border); }
+.row-actions a.wa { color: #25D366; }
+.row-actions button:hover, .row-actions a:hover { background: var(--border); }
 
 .calendar-legend { display: flex; gap: 18px; font-size: 0.82rem; margin-bottom: 14px; }
 .calendar-legend span { display: flex; align-items: center; gap: 6px; }
