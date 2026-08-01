@@ -26,7 +26,7 @@ const CONFIG = {
   // ---- Google Apps Script Web App URL ----
   // Deploy google-apps-script.js as a Web App (see SETUP-GUIDE.md)
   // and paste the /exec URL below.
-  apiUrl: "https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec",
+  apiUrl: "https://script.google.com/macros/s/AKfycbwrrOH3gYbbTSSHcbg9C5Kq71Ebwz_RaKWTI3tMhTm9lkRh67GWVqSmlgn5spOe5AeQqg/exec",
 
   // ---- Google Maps (real pinned coordinates) ----
   mapsEmbedUrl: "https://www.google.com/maps?q=28.598338804948032,76.97617734710417&z=17&output=embed",
