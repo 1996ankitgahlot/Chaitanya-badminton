@@ -517,7 +517,7 @@ Time: ${b.slot}${arriveLine}
 
 Thank you!`;
 
-  const digits = (b.mobile || "").replace(/\D/g, "").slice(-10);
+  const digits = String(b.mobile || "").replace(/\D/g, "").slice(-10);
   return `https://wa.me/91${digits}?text=${encodeURIComponent(msg)}`;
 }
 
@@ -528,7 +528,7 @@ function applyFilters() {
   const status = $("#f-status")?.value || "";
 
   AdminState.filtered = AdminState.bookings.filter(b => {
-    const matchesSearch = !search || b.name.toLowerCase().includes(search) || b.mobile.includes(search) || b.bookingId.toLowerCase().includes(search);
+    const matchesSearch = !search || b.name.toLowerCase().includes(search) || String(b.mobile || "").includes(search) || b.bookingId.toLowerCase().includes(search);
     const matchesDate = !date || b.date === date;
     const matchesCourt = !court || b.court === court;
     const matchesStatus = !status || b.status === status;
