@@ -23,23 +23,52 @@ function formatDateLong(dateStr) {
   return d.toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
 }
 
+const API_RETRY_DELAY_MS = 900;
+
+/** Small helper: try the fetch, and if it fails once (e.g. a fresh Apps Script deploy still propagating), wait briefly and try exactly once more before giving up. */
+async function withRetry(fn) {
+  try {
+    return await fn();
+  } catch (err) {
+    console.warn("First attempt failed, retrying once:", err);
+    await new Promise(r => setTimeout(r, API_RETRY_DELAY_MS));
+    return await fn();
+  }
+}
+
 /** Wraps all Apps Script calls. GET for reads, POST (text/plain to avoid CORS preflight) for writes. */
 async function apiGet(params) {
-  const url = new URL(CONFIG.apiUrl);
-  Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
-  const res = await fetch(url.toString());
-  if (!res.ok) throw new Error("Network error");
-  return res.json();
+  return withRetry(async () => {
+    const url = new URL(CONFIG.apiUrl);
+    Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+    const res = await fetch(url.toString());
+    if (!res.ok) throw new Error(`Network error (HTTP ${res.status})`);
+    const text = await res.text();
+    try {
+      return JSON.parse(text);
+    } catch {
+      // Apps Script sometimes momentarily returns an HTML/redirect page right after a fresh
+      // deploy — this makes that failure mode obvious instead of a cryptic parse error.
+      throw new Error("Server didn't return valid data (got: " + text.slice(0, 80) + "...) — this usually clears up within a minute or two of redeploying.");
+    }
+  });
 }
 
 async function apiPost(payload) {
-  const res = await fetch(CONFIG.apiUrl, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain;charset=utf-8" }, // avoids CORS preflight on Apps Script
-    body: JSON.stringify(payload),
+  return withRetry(async () => {
+    const res = await fetch(CONFIG.apiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" }, // avoids CORS preflight on Apps Script
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error(`Network error (HTTP ${res.status})`);
+    const text = await res.text();
+    try {
+      return JSON.parse(text);
+    } catch {
+      throw new Error("Server didn't return valid data (got: " + text.slice(0, 80) + "...) — this usually clears up within a minute or two of redeploying.");
+    }
   });
-  if (!res.ok) throw new Error("Network error");
-  return res.json();
 }
 
 /* ---------------------------------------------------------
@@ -371,7 +400,7 @@ async function loadBookings() {
     renderSlotControl();
   } catch (err) {
     console.error(err);
-    if (tbody) tbody.innerHTML = `<tr><td colspan="7" class="empty-state"><i class="fa-solid fa-triangle-exclamation"></i>Could not load bookings. Check the Apps Script URL in config.js.</td></tr>`;
+    if (tbody) tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><i class="fa-solid fa-triangle-exclamation"></i>Could not load bookings.<br><span style="font-size:0.78rem;opacity:0.75">${(err.message || "Unknown error").replace(/</g, "&lt;")}</span></div></td></tr>`;
   }
 }
 
